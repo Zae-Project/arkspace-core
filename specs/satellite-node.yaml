@@ -1,0 +1,368 @@
+# ArkSpace Satellite Node Specification
+# Version: 1.0.0
+# Last Updated: January 2026
+
+apiVersion: arkspace.me/v1
+kind: SatelliteNode
+metadata:
+  name: exocortex-node
+  description: Neuromorphic satellite node for consciousness substrate
+  version: "1.0.0"
+
+spec:
+  # =============================================================================
+  # ORBITAL PARAMETERS
+  # =============================================================================
+  orbit:
+    type: LEO
+    altitude_km:
+      nominal: 550
+      range: [400, 600]
+    inclination_deg: 53  # Similar to Starlink for global coverage
+    orbital_period_min: 95.7
+    ground_track_repeat_days: null  # Non-repeating for coverage
+
+  # =============================================================================
+  # PHYSICAL SPECIFICATIONS
+  # =============================================================================
+  physical:
+    form_factor: "6U+"  # Extended 6U CubeSat
+    dimensions_mm:
+      length: 340
+      width: 226
+      height: 200
+    mass_kg:
+      dry: 12
+      wet: 14  # With propellant
+      max_payload: 4
+    
+    structure:
+      material: aluminum_6061_t6
+      radiation_shielding: yes
+      debris_protection: whipple_shield
+
+  # =============================================================================
+  # POWER SYSTEM
+  # =============================================================================
+  power:
+    solar_array:
+      type: deployable
+      cell_type: GaAs_triple_junction
+      efficiency_percent: 30
+      area_m2: 0.8
+      power_generation_w:
+        sunlight: 240
+        eclipse: 0
+    
+    battery:
+      type: lithium_ion
+      capacity_wh: 150
+      depth_of_discharge_percent: 30
+      cycle_life: 20000
+    
+    power_budget_w:
+      neuromorphic_payload: 100
+      oisl_transceiver: 30
+      attitude_control: 15
+      command_and_data: 10
+      thermal_control: 15
+      margin: 20
+      total_required: 190
+    
+    eclipse_duration_min: 35
+    eclipse_survival: yes
+
+  # =============================================================================
+  # NEUROMORPHIC PAYLOAD
+  # =============================================================================
+  payload:
+    neuromorphic_processor:
+      type: loihi_class
+      architecture: asynchronous_snn
+      
+      capacity:
+        neurons: 100_000_000  # 100M neurons per node
+        synapses: 100_000_000_000  # 100B synapses
+        
+      performance:
+        spikes_per_second: 10_000_000_000  # 10B spikes/s
+        real_time_factor: 1.0  # Real-time processing
+        latency_per_spike_ns: 100
+        
+      power:
+        typical_w: 50
+        peak_w: 100
+        standby_w: 5
+        
+      memory:
+        on_chip_mb: 256
+        external_ddr_gb: 16
+        
+      interfaces:
+        oisl_interface: pcie_gen4_x8
+        control_interface: spi
+        debug_interface: jtag
+    
+    # TEE for key storage and sensitive operations
+    secure_enclave:
+      type: arm_trustzone
+      key_storage_slots: 16
+      supported_algorithms:
+        - AES-256-GCM
+        - X25519
+        - Ed25519
+        - SHA-256
+      tamper_detection: yes
+
+  # =============================================================================
+  # OISL (OPTICAL INTER-SATELLITE LINK)
+  # =============================================================================
+  oisl:
+    transceiver_count: 4  # Connect to 4 neighboring satellites
+    
+    optical:
+      wavelength_nm: 1550
+      transmit_power_w: 1
+      aperture_diameter_mm: 50
+      divergence_urad: 10
+      pointing_accuracy_urad: 1
+      
+    performance:
+      data_rate_gbps:
+        minimum: 10
+        typical: 60
+        maximum: 200
+      max_range_km: 5400
+      latency_one_way_ms: 0.018  # Speed of light
+      bit_error_rate: 1e-12
+      
+    acquisition:
+      acquisition_time_s: 5
+      reacquisition_time_s: 0.5
+      tracking_update_rate_hz: 1000
+      
+    modulation: DPSK
+    error_correction: LDPC
+    encryption: AES-256-GCM
+
+  # =============================================================================
+  # GROUND LINK
+  # =============================================================================
+  ground_link:
+    rf:
+      frequency_band: Ka
+      uplink_ghz: [27.5, 30.0]
+      downlink_ghz: [17.7, 20.2]
+      data_rate_mbps:
+        uplink: 500
+        downlink: 1000
+      antenna_type: phased_array
+      eirp_dbw: 35
+      g_t_db_k: 15
+      
+    optical:  # Future upgrade path
+      enabled: false
+      wavelength_nm: 1550
+      data_rate_gbps: 10
+
+  # =============================================================================
+  # ATTITUDE DETERMINATION AND CONTROL (ADCS)
+  # =============================================================================
+  adcs:
+    sensors:
+      star_tracker:
+        count: 2
+        accuracy_arcsec: 10
+      sun_sensor:
+        count: 6
+        accuracy_deg: 0.5
+      magnetometer:
+        count: 1
+        resolution_nT: 10
+      gyroscope:
+        count: 1
+        type: mems
+        bias_stability_deg_hr: 0.1
+        
+    actuators:
+      reaction_wheels:
+        count: 4  # 3 + 1 redundant
+        momentum_nms: 0.03
+        torque_mnm: 2
+      magnetorquer:
+        count: 3
+        dipole_am2: 0.2
+        
+    performance:
+      pointing_accuracy_deg: 0.1
+      pointing_stability_deg_s: 0.01
+      slew_rate_deg_s: 2
+      
+    modes:
+      - name: nadir_pointing
+        description: Default Earth-pointing for ground link
+      - name: oisl_tracking
+        description: Track neighboring satellites for optical link
+      - name: sun_safe
+        description: Emergency sun-pointing for power
+
+  # =============================================================================
+  # PROPULSION
+  # =============================================================================
+  propulsion:
+    type: electric
+    thruster: hall_effect
+    
+    performance:
+      thrust_mn: 5
+      specific_impulse_s: 1500
+      power_w: 50
+      
+    propellant:
+      type: xenon
+      mass_kg: 2
+      delta_v_m_s: 150
+      
+    purpose:
+      - orbit_maintenance
+      - collision_avoidance
+      - deorbit
+
+  # =============================================================================
+  # THERMAL CONTROL
+  # =============================================================================
+  thermal:
+    passive:
+      mli_blankets: yes
+      radiator_area_m2: 0.1
+      surface_coatings:
+        solar_absorptance: 0.2
+        ir_emittance: 0.85
+        
+    active:
+      heaters:
+        count: 4
+        power_w: 10
+      heat_pipes: yes
+      
+    operating_range_c:
+      neuromorphic_payload: [-10, 60]
+      battery: [0, 45]
+      electronics: [-20, 70]
+      
+    design_margins:
+      hot_case_margin_c: 10
+      cold_case_margin_c: 10
+
+  # =============================================================================
+  # COMMAND AND DATA HANDLING
+  # =============================================================================
+  cdh:
+    processor:
+      type: rad_tolerant_arm
+      clock_mhz: 400
+      memory_mb: 512
+      storage_gb: 64
+      
+    interfaces:
+      - type: spacewire
+        count: 4
+      - type: can_bus
+        count: 2
+      - type: uart
+        count: 4
+        
+    software:
+      os: rtos_vxworks
+      flight_software: custom
+      update_capability: yes
+      
+    telemetry:
+      housekeeping_rate_hz: 1
+      payload_rate_hz: 1000
+      storage_days: 7
+
+  # =============================================================================
+  # RELIABILITY AND REDUNDANCY
+  # =============================================================================
+  reliability:
+    design_life_years: 5
+    orbit_life_years: 7
+    
+    redundancy:
+      neuromorphic_processor: none  # Hot spare via constellation
+      oisl_transceiver: 4_for_3  # 4 transceivers, need 3 working
+      reaction_wheel: 4_for_3
+      star_tracker: 2_for_1
+      
+    fault_tolerance:
+      single_event_upset_mitigation: yes
+      watchdog_timer: yes
+      safe_mode: autonomous
+      
+    radiation:
+      total_ionizing_dose_krad: 30
+      single_event_latchup_immune: yes
+
+  # =============================================================================
+  # CONSTELLATION INTEGRATION
+  # =============================================================================
+  constellation:
+    minimum_nodes: 3
+    optimal_nodes: 6
+    maximum_nodes: 12
+    
+    topology: mesh
+    routing_protocol: custom_neural_routing
+    
+    handoff:
+      type: seamless
+      max_handoff_time_ms: 100
+      state_migration_supported: yes
+      
+    coverage:
+      latitude_range_deg: [-60, 60]
+      revisit_time_min: 15
+
+# =============================================================================
+# STATUS AND MONITORING
+# =============================================================================
+status:
+  telemetry_points:
+    - name: payload_power_w
+      type: float
+      unit: watts
+      sample_rate_hz: 1
+      
+    - name: payload_temperature_c
+      type: float
+      unit: celsius
+      sample_rate_hz: 0.1
+      
+    - name: neuron_activity_percent
+      type: float
+      unit: percent
+      sample_rate_hz: 10
+      
+    - name: oisl_link_status
+      type: enum
+      values: [disconnected, acquiring, tracking, communicating]
+      sample_rate_hz: 1
+      
+    - name: spike_rate_per_second
+      type: integer
+      unit: spikes_per_second
+      sample_rate_hz: 10
+
+  alerts:
+    - name: payload_overtemp
+      condition: payload_temperature_c > 55
+      severity: warning
+      
+    - name: oisl_link_lost
+      condition: oisl_link_status == disconnected
+      severity: critical
+      
+    - name: power_low
+      condition: battery_percent < 20
+      severity: warning

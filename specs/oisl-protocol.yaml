@@ -1,0 +1,534 @@
+# ArkSpace OISL Neural Protocol Specification
+# Version: 1.0.0
+# Last Updated: January 2026
+
+apiVersion: arkspace.me/v1
+kind: Protocol
+metadata:
+  name: oisl-neural-protocol
+  description: Optical Inter-Satellite Link protocol for neural data transmission
+  version: "1.0.0"
+  based_on: CCSDS
+
+spec:
+  # =============================================================================
+  # PROTOCOL OVERVIEW
+  # =============================================================================
+  overview:
+    purpose: |
+      High-bandwidth, low-latency transmission of neural state data between
+      satellite nodes in the Exocortex Constellation. Optimized for SNN spike
+      streams and state synchronization.
+    
+    design_goals:
+      - latency_target_ms: 10
+      - bandwidth_target_gbps: 60
+      - reliability_target: 99.999%
+      - security: end_to_end_encryption
+
+  # =============================================================================
+  # PHYSICAL LAYER
+  # =============================================================================
+  physical_layer:
+    medium: free_space_optical
+    wavelength_nm: 1550
+    modulation: DPSK  # Differential Phase Shift Keying
+    
+    symbol_rate_gbaud: 25
+    bits_per_symbol: 2
+    raw_bit_rate_gbps: 50
+    
+    forward_error_correction:
+      type: LDPC
+      code_rate: 0.8
+      effective_bit_rate_gbps: 40
+      
+    polarization:
+      type: dual_polarization
+      multiplexing: PDM  # Polarization Division Multiplexing
+      total_capacity_gbps: 80  # 40 Gbps × 2 polarizations
+      
+    wavelength_division:
+      enabled: true
+      channels: 3
+      channel_spacing_ghz: 100
+      total_capacity_gbps: 240  # 80 Gbps × 3 wavelengths
+
+  # =============================================================================
+  # DATA LINK LAYER
+  # =============================================================================
+  data_link_layer:
+    framing:
+      type: variable_length
+      max_frame_size_bytes: 65535
+      min_frame_size_bytes: 64
+      
+    frame_format:
+      header:
+        - field: sync_marker
+          size_bytes: 4
+          value: "0x1ACFFC1D"
+          
+        - field: version
+          size_bits: 4
+          
+        - field: frame_type
+          size_bits: 4
+          values:
+            0x0: spike_stream
+            0x1: state_snapshot
+            0x2: state_delta
+            0x3: control
+            0x4: telemetry
+            0x5: keepalive
+            0xF: reserved
+            
+        - field: priority
+          size_bits: 4
+          values:
+            0: bulk
+            1: normal
+            2: high
+            3: realtime
+            
+        - field: sequence_number
+          size_bytes: 4
+          
+        - field: timestamp_ns
+          size_bytes: 8
+          description: UTC nanoseconds since epoch
+          
+        - field: source_node_id
+          size_bytes: 1
+          
+        - field: destination_node_id
+          size_bytes: 1
+          
+        - field: payload_length
+          size_bytes: 2
+          
+        - field: header_crc
+          size_bytes: 2
+          algorithm: CRC-16-CCITT
+          
+      payload:
+        max_size_bytes: 65507
+        encryption: AES-256-GCM
+        
+      trailer:
+        - field: payload_crc
+          size_bytes: 4
+          algorithm: CRC-32
+          
+        - field: auth_tag
+          size_bytes: 16
+          description: AES-GCM authentication tag
+
+    flow_control:
+      type: credit_based
+      initial_credits: 1000
+      credit_unit_bytes: 1024
+      credit_return_threshold: 500
+
+    error_handling:
+      detection: crc_and_auth_tag
+      correction: fec_ldpc
+      retransmission:
+        enabled: true
+        max_retries: 3
+        timeout_ms: 50
+        
+    link_management:
+      keepalive_interval_ms: 100
+      timeout_ms: 500
+      reconnect_delay_ms: 1000
+
+  # =============================================================================
+  # NETWORK LAYER
+  # =============================================================================
+  network_layer:
+    addressing:
+      node_id_bits: 8  # Up to 256 nodes
+      session_id_bits: 64
+      
+    routing:
+      type: source_routing
+      algorithm: shortest_path_latency
+      
+      path_computation:
+        metric: latency_ms
+        constraints:
+          - max_hops: 4
+          - min_bandwidth_gbps: 10
+          
+      path_update:
+        trigger: link_state_change
+        convergence_time_ms: 100
+        
+    multicast:
+      enabled: true
+      group_id_bits: 16
+      max_groups: 256
+      
+    quality_of_service:
+      classes:
+        - name: realtime
+          priority: 3
+          max_latency_ms: 10
+          guaranteed_bandwidth_gbps: 20
+          preemption: true
+          
+        - name: high
+          priority: 2
+          max_latency_ms: 50
+          guaranteed_bandwidth_gbps: 10
+          preemption: false
+          
+        - name: normal
+          priority: 1
+          max_latency_ms: 100
+          guaranteed_bandwidth_gbps: 5
+          preemption: false
+          
+        - name: bulk
+          priority: 0
+          max_latency_ms: 1000
+          guaranteed_bandwidth_gbps: 0
+          preemption: false
+
+  # =============================================================================
+  # TRANSPORT LAYER
+  # =============================================================================
+  transport_layer:
+    # Reliable transport for state snapshots and control
+    reliable:
+      type: custom_reliable
+      congestion_control: bbr  # Bottleneck Bandwidth and RTT
+      
+      window:
+        initial_bytes: 1048576  # 1 MB
+        max_bytes: 67108864     # 64 MB
+        
+      acknowledgment:
+        type: selective_ack
+        delay_ms: 1
+        
+      retransmission:
+        rto_min_ms: 10
+        rto_max_ms: 1000
+        
+    # Unreliable transport for spike streams (real-time)
+    unreliable:
+      type: datagram
+      
+      features:
+        - sequence_numbering
+        - timestamp
+        - loss_detection
+        # No retransmission (stale data useless)
+        
+      loss_handling:
+        strategy: interpolation
+        max_interpolation_gap_ms: 5
+
+  # =============================================================================
+  # APPLICATION PROTOCOLS
+  # =============================================================================
+  application_protocols:
+    # Spike stream protocol for real-time neural data
+    spike_stream:
+      protocol_id: 0x01
+      transport: unreliable
+      qos_class: realtime
+      
+      message_format:
+        header:
+          - field: session_id
+            size_bytes: 8
+          - field: stream_sequence
+            size_bytes: 4
+          - field: spike_count
+            size_bytes: 2
+            
+        spike_event:
+          - field: neuron_id
+            size_bytes: 4
+          - field: timestamp_offset_us
+            size_bytes: 2
+            
+      compression:
+        enabled: true
+        algorithm: delta_encoding
+        typical_ratio: 2:1
+        
+      batching:
+        max_spikes_per_packet: 10000
+        max_latency_ms: 1
+        
+    # State snapshot protocol for full state transfer
+    state_snapshot:
+      protocol_id: 0x02
+      transport: reliable
+      qos_class: high
+      
+      message_format:
+        header:
+          - field: session_id
+            size_bytes: 8
+          - field: snapshot_id
+            size_bytes: 8
+          - field: total_chunks
+            size_bytes: 4
+          - field: chunk_index
+            size_bytes: 4
+          - field: neuron_count
+            size_bytes: 4
+          - field: synapse_count
+            size_bytes: 8
+            
+        neuron_state:
+          - field: neuron_id
+            size_bytes: 4
+          - field: membrane_potential_mv
+            size_bytes: 4
+            type: float32
+          - field: refractory_remaining_us
+            size_bytes: 2
+          - field: last_spike_time_ns
+            size_bytes: 8
+            
+        synapse_state:
+          - field: synapse_id
+            size_bytes: 8
+          - field: weight
+            size_bytes: 4
+            type: float32
+            
+      compression:
+        enabled: true
+        algorithm: lz4
+        typical_ratio: 3:1
+        
+      chunking:
+        chunk_size_bytes: 65000
+        parallel_chunks: 16
+        
+    # State delta protocol for incremental updates
+    state_delta:
+      protocol_id: 0x03
+      transport: reliable
+      qos_class: high
+      
+      message_format:
+        header:
+          - field: session_id
+            size_bytes: 8
+          - field: base_snapshot_id
+            size_bytes: 8
+          - field: delta_sequence
+            size_bytes: 4
+          - field: changed_neuron_count
+            size_bytes: 4
+          - field: changed_synapse_count
+            size_bytes: 4
+            
+        # Only changed values included
+        
+      compression:
+        enabled: true
+        algorithm: lz4
+        typical_ratio: 10:1
+        
+    # Control protocol for session management
+    control:
+      protocol_id: 0x04
+      transport: reliable
+      qos_class: high
+      
+      commands:
+        - name: session_start
+          id: 0x01
+          parameters:
+            - session_id: uint64
+            - encryption_key: bytes[32]
+            - snn_model_hash: bytes[32]
+            
+        - name: session_end
+          id: 0x02
+          parameters:
+            - session_id: uint64
+            - reason: enum[normal, error, timeout]
+            
+        - name: state_migration_request
+          id: 0x10
+          parameters:
+            - session_id: uint64
+            - source_node: uint8
+            - destination_node: uint8
+            
+        - name: state_migration_ack
+          id: 0x11
+          parameters:
+            - session_id: uint64
+            - migration_id: uint64
+            - status: enum[accepted, rejected, in_progress, complete]
+            
+        - name: emergency_stop
+          id: 0xFF
+          parameters:
+            - session_id: uint64
+            - reason: string
+          priority: highest
+
+  # =============================================================================
+  # SECURITY
+  # =============================================================================
+  security:
+    encryption:
+      algorithm: AES-256-GCM
+      key_size_bits: 256
+      iv_size_bits: 96
+      auth_tag_size_bits: 128
+      
+    key_management:
+      key_exchange: X25519
+      key_derivation: HKDF-SHA256
+      key_rotation_interval_hours: 24
+      
+    authentication:
+      algorithm: Ed25519
+      certificate_format: X.509
+      chain_validation: required
+      
+    integrity:
+      frame_level: crc32_and_gcm_tag
+      session_level: hmac_sha256
+      
+    anti_replay:
+      enabled: true
+      window_size: 1024
+      timestamp_tolerance_ms: 100
+
+  # =============================================================================
+  # PERFORMANCE TARGETS
+  # =============================================================================
+  performance:
+    latency:
+      one_way_target_ms: 5
+      one_way_max_ms: 10
+      includes:
+        - propagation: 0.018  # Speed of light at 5400km
+        - serialization: 0.5
+        - encryption: 0.5
+        - processing: 1.0
+        - queueing: 3.0
+        
+    throughput:
+      per_link_gbps:
+        target: 60
+        minimum: 10
+        burst: 200
+        
+      aggregate_gbps:
+        per_node: 240  # 4 links × 60 Gbps
+        constellation: 1440  # 6 nodes × 240 Gbps
+        
+    reliability:
+      packet_loss_target: 0.0001%  # 1 in 1M
+      link_availability_target: 99.99%
+      
+    jitter:
+      max_ms: 2
+      typical_ms: 0.5
+
+  # =============================================================================
+  # OPERATIONAL PROCEDURES
+  # =============================================================================
+  operations:
+    link_establishment:
+      1_beacon:
+        initiator: higher_node_id
+        beacon_interval_ms: 100
+        beacon_duration_s: 10
+        
+      2_acquisition:
+        coarse_pointing: star_tracker_assist
+        fine_pointing: beacon_tracking
+        acquisition_time_s: 5
+        
+      3_authentication:
+        certificate_exchange: true
+        key_agreement: x25519_kyber
+        timeout_s: 5
+        
+      4_handshake:
+        capability_exchange: true
+        qos_negotiation: true
+        timeout_s: 2
+        
+      5_operational:
+        keepalive_start: immediate
+        traffic_start: immediate
+
+    link_maintenance:
+      tracking_loop_hz: 1000
+      power_adjustment: automatic
+      error_rate_monitoring: continuous
+      
+    link_failure:
+      detection_time_ms: 500
+      rerouting_time_ms: 100
+      state_recovery: automatic
+      notification: immediate
+
+    handoff:
+      trigger: link_quality_degradation
+      preparation_time_s: 30
+      execution_time_ms: 100
+      state_transfer: pre_staged
+
+  # =============================================================================
+  # TELEMETRY AND MONITORING
+  # =============================================================================
+  telemetry:
+    metrics:
+      - name: link_latency_ms
+        type: histogram
+        buckets: [1, 2, 5, 10, 20, 50, 100]
+        
+      - name: throughput_gbps
+        type: gauge
+        sample_rate_hz: 10
+        
+      - name: packet_loss_rate
+        type: counter
+        window_s: 60
+        
+      - name: bit_error_rate
+        type: gauge
+        sample_rate_hz: 1
+        
+      - name: pointing_error_urad
+        type: gauge
+        sample_rate_hz: 100
+        
+      - name: received_power_dbm
+        type: gauge
+        sample_rate_hz: 10
+        
+    alerts:
+      - name: latency_exceeded
+        condition: link_latency_ms > 20
+        severity: warning
+        
+      - name: link_degraded
+        condition: bit_error_rate > 1e-9
+        severity: warning
+        
+      - name: link_critical
+        condition: bit_error_rate > 1e-6
+        severity: critical
+        
+      - name: link_lost
+        condition: no_keepalive_for_500ms
+        severity: emergency
