@@ -289,21 +289,38 @@ This is a documentation and research repository. There is no executable code.
 
 ---
 
-## Scientific References
+## Research Resources
 
-### Satellite Technology
+For comprehensive research materials supporting this project, see the **[Zae Project Bibliography](https://github.com/Zae-Project/zae-docs/blob/main/reference/bibliography.md)** - a centralized repository containing:
+
+- **100+ Key Researchers** - Leading scientists in neuromorphic computing, satellite systems, and consciousness studies
+- **50+ Foundational Papers** - Seminal publications with full citations
+- **35+ Essential Books** - Organized by topic with reading recommendations
+- **Research Institutions & Labs** - Major centers advancing relevant technologies
+- **Industry Leaders** - Companies working on neuromorphic hardware and satellite systems
+
+**Relevant Sections for ArkSpace:**
+- Neuromorphic Computing (Mead, Boahen, Eliasmith, Furber)
+- Satellite Communications (SpaceX, FCC/ITU standards)
+- Computational Neuroscience (Sejnowski, Gerstner, Izhikevich)
+
+Also see the **[Researchers Directory](https://github.com/Zae-Project/zae-docs/blob/main/reference/researchers-directory.md)** for detailed profiles and contact information.
+
+### Key References for This Repository
+
+#### Satellite Technology
 - Space Mission Analysis and Design (SMAD), 3rd Edition
 - OreSat: Open source CubeSat platform
 - Starlink FCC filings (OISL specifications)
 
-### Neuromorphic Computing
+#### Neuromorphic Computing
 - Davies, M., et al. (2021). Advancing Neuromorphic Computing with Loihi 2. Intel Labs.
 - Furber, S. B., et al. (2014). The SpiNNaker Project. Proceedings of the IEEE.
 
-### Neuroscience
+#### Neuroscience
 - Libet, B., et al. (1983). Time of conscious intention to act in relation to onset of cerebral activity. Brain, 106(3), 623-642.
 
-### Optical Communication
+#### Optical Communication
 - TESAT Laser Communication Terminal specifications
 - Hemmati, H. (2006). Deep Space Optical Communications. Wiley.
 
