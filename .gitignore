@@ -1,0 +1,80 @@
+# arkspace-core . Git Ignore
+
+# ===== Local-only project journal =====
+CLAUDE.md
+.claude/
+*.local
+.local/
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# ===== IDE / Editor =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ===== OS =====
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ===== Logs =====
+*.log
+logs/
+
+# ===== Credentials & Secrets =====
+.env
+.env.local
+.env.*.local
+credentials.json
+secrets.yaml
+*.key
+*.pem
+*.cert
+
+# ===== Temporary =====
+*.tmp
+*.bak
+nul
+
+# ===== Build artifacts =====
+*.o
+*.a
+*.exe
+*.dll
+*.dylib
+*.out

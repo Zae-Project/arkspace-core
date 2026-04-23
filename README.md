@@ -162,27 +162,22 @@ The proposed system would transmit neural data between a hypothetical brain-comp
 
 ---
 
-## Integration with Related Projects
+## Role in the Zae Project
 
-This repository is part of a larger research ecosystem:
+This repository is the **Infrastructure** pillar of the [Zae Project](https://github.com/Zae-Project) 4-pillar stack. It defines the orbital host for the synthetic hemisphere: LEO satellites, OISL, SNN payload, ground segment.
 
-### MindTransfer.me (Brain-Computer Interface Research)
+| Pillar | Repo | Role |
+|---|---|---|
+| 🛰️ **Infrastructure** | **arkspace-core** (this repo) | **LEO satellite constellation. OISL. Neuromorphic payload specifications. Latency envelope (<50 ms RTT). Power envelope (50-200W).** |
+| 🧠 Interface | [brain-emulation](https://github.com/Zae-Project/brain-emulation) | Atlas-based Brian2 SNN simulation and 3D visualizer. Biological-fidelity reference. |
+| ⚡ Engine | [neutral-consciousness-engine](https://github.com/Zae-Project/neutral-consciousness-engine) | Nengo + ROS 2 SNN runtime. Must fit within this repo's latency and power envelope. |
+| 🌡️ Substrate | [thermodynamic-core](https://github.com/Zae-Project/thermodynamic-core) | Physical computing paradigm (p-bits, Langevin). Phase 3 target: radiation-hardened stochastic silicon for the payload. |
+| 📚 Docs | [zae-docs](https://github.com/Zae-Project/zae-docs) | Authoritative unified architecture and bibliography. |
 
-**Status**: Separate research project  
-**Repository**: [brain_emulation](https://github.com/venturaEffect/brain_emulation)  
-**Scope**: Simulation and visualization of biologically realistic spiking neural networks
-
-**Note**: The brain_emulation project focuses on simulation and does not claim to implement actual brain interfaces. Integration with ArkSpace remains theoretical.
-
----
-
-### TheConsciousness.ai/core (SNN Software)
-
-**Status**: Separate research project  
-**Repository**: [neutral-consciousness-engine](https://github.com/venturaEffect/neutral-consciousness-engine)  
-**Scope**: Spiking Neural Network runtime environment (Nengo/ROS 2)
-
-**Proposed Integration**: The SNN software from TheConsciousness.ai/core would theoretically run on ArkSpace neuromorphic processors. This integration is conceptual only.
+Per-pillar contract docs:
+- Substrate ↔ Infrastructure. [`thermodynamic-core/docs/integration/with-arkspace.md`](https://github.com/Zae-Project/thermodynamic-core/blob/main/docs/integration/with-arkspace.md)
+- Engine ↔ Infrastructure. [`docs/integration/consciousness-interface.md`](./docs/integration/consciousness-interface.md)
+- Interface ↔ Infrastructure. [`docs/integration/mindtransfer-interface.md`](./docs/integration/mindtransfer-interface.md)
 
 ---
 
@@ -261,11 +256,14 @@ This is a documentation and research repository. There is no executable code.
 
 ## Related Projects
 
-| Project | Role | Status |
+See the "Role in the Zae Project" section above for the full 4-pillar table. Canonical remotes under [Zae-Project](https://github.com/Zae-Project):
+
+| Repo | Role | Status |
 |---------|------|--------|
-| **brain_emulation** | Neural network simulation | Active research |
-| **neutral-consciousness-engine** | SNN software runtime | Conceptual |
-| **Zae Docs** | Unified architecture | Private documentation |
+| [brain-emulation](https://github.com/Zae-Project/brain-emulation) | Atlas-based Brian2 SNN + 3D visualizer | v1.0 feature-complete |
+| [neutral-consciousness-engine](https://github.com/Zae-Project/neutral-consciousness-engine) | Nengo + ROS 2 SNN runtime, Neural Firewall | Research & prototyping |
+| [thermodynamic-core](https://github.com/Zae-Project/thermodynamic-core) | p-bits, Langevin substrate (Phase 2 sims landed Apr 2026) | TRL 2-3 |
+| [zae-docs](https://github.com/Zae-Project/zae-docs) | Unified architecture + bibliography | Public |
 
 ---
 
