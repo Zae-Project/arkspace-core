@@ -230,12 +230,12 @@ This is a documentation and research repository. There is no executable code.
 
 ## Research Roadmap
 
-### Phase 1: Foundation (Q1 2026) - In Progress
+### Phase 1: Foundation (Q1 2026) - Completed January 14, 2026
 - [x] Initial architecture documentation
 - [x] Preliminary specifications for key subsystems
-- [ ] Complete OISL protocol specifications
-- [ ] Regulatory requirements research (FCC, ITU)
-- [ ] Cost modeling
+- [x] Complete OISL protocol specifications (`docs/protocols/oisl-neural-protocol.md`, v0.1)
+- [x] Regulatory requirements research (FCC Part 25, ITU, ITAR; under `docs/regulatory/`)
+- [x] Cost modeling (per `roadmap/milestones.md` Milestone 1.1)
 
 ### Phase 2: Analysis (Q2-Q3 2026)
 - [ ] Link budget verification
