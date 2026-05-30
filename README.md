@@ -69,15 +69,15 @@ Spiking Neural Network processors proposed for orbital deployment.
 
 | Specification | Proposed Value | Current Technology |
 |---------------|----------------|-------------------|
-| Processor | Neuromorphic (Loihi-class) | Intel Loihi 2: 1M neurons, lab environment only |
-| Neuron Count | 100M per node | 100× larger than current Loihi 2 |
+| Processor | Neuromorphic (Loihi-class) | Intel Loihi 2: 1M neurons/chip; Hala Point packs 1,152 chips. SpiNNaker2: 152k neurons/chip, deployed at Sandia (2025). Terrestrial only |
+| Neuron Count | 100M per node | ~100× a single Loihi 2 chip; reachable only by multi-chip systems on the ground |
 | Power | 50-200W per payload | Loihi 2: ~1W (terrestrial, unverified for space) |
-| Radiation Hardening | Required for LEO | No radiation-hardened neuromorphic chips exist |
+| Radiation Hardening | Required for LEO | Rad-tolerant neuromorphic IP is emerging (BrainChip Akida in Frontgrade Gaisler space-grade parts); IBM NorthPole has heavy-ion test data. No flight-qualified part at 100M-neuron scale |
 
-**Technology Status**: Terrestrial neuromorphic processors exist at laboratory scale (Intel Loihi, IBM TrueNorth). Space deployment requires radiation hardening, thermal management, and power scaling that have not been demonstrated.
+**Technology Status**: Terrestrial neuromorphic processors run at laboratory and multi-chip scale (Intel Loihi 2 / Hala Point, SpiNNaker2, IBM NorthPole). Radiation-tolerant neuromorphic IP has reached space-grade silicon at small scale (BrainChip Akida via Frontgrade Gaisler). Space deployment at the proposed neuron count still requires thermal management and power scaling that have not been demonstrated.
 
 **Technology Gap**: 
-- Radiation-hardened neuromorphic processors do not exist
+- No radiation-hardened neuromorphic processor at the required scale. Rad-tolerant IP (BrainChip Akida / Frontgrade Gaisler) and rad-tested research parts (IBM NorthPole) exist at far smaller scale
 - Power consumption at proposed neuron counts is unknown
 - Long-term reliability in space environment is uncharacterized
 
@@ -276,11 +276,12 @@ See the "Role in the Zae Project" section above for the full 4-pillar table. Can
 - Star trackers and ADCS systems
 
 ### Emerging Technology (TRL 4-6)
-- High-bandwidth OISL (demonstrated but not widespread)
-- Neuromorphic processors (terrestrial lab environments)
+- High-bandwidth OISL (operational in SDA Tranche programs; TESAT SCOT80 to 100 Gbps, SDA OCT Standard 3.1)
+- Neuromorphic processors (terrestrial multi-chip: Hala Point, SpiNNaker2, NorthPole)
+- Rad-tolerant neuromorphic IP at small scale (BrainChip Akida via Frontgrade Gaisler)
 
 ### Conceptual Technology (TRL 1-3)
-- Radiation-hardened neuromorphic processors
+- Radiation-hardened neuromorphic processors at 100M-neuron scale
 - High-bandwidth brain-computer interfaces
 - Neural data transmission protocols
 - Consciousness substrate transfer (TRL 1, speculative)
@@ -289,7 +290,7 @@ See the "Role in the Zae Project" section above for the full 4-pillar table. Can
 
 ## Research Resources
 
-For comprehensive research materials supporting this project, see the **[Zae Project Bibliography](https://github.com/Zae-Project/zae-docs/blob/main/reference/bibliography.md)** - a centralized repository containing:
+For the research materials supporting this project, see the **[Zae Project Bibliography](https://github.com/Zae-Project/zae-docs/blob/main/reference/bibliography.md)** - a centralized repository containing:
 
 - **100+ Key Researchers** - Leading scientists in neuromorphic computing, satellite systems, and consciousness studies
 - **50+ Foundational Papers** - Seminal publications with full citations
